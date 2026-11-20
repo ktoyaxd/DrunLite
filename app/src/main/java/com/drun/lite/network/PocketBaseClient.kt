@@ -265,7 +265,8 @@ class PocketBaseClient(context: Context) {
 
     suspend fun getKvItem(key: String): JsonElement? {
         return try {
-            val filter = "key = "${key.replace(""", "\"")}""
+            val escapedKey = key.replace("\"", "\\\"")
+            val filter = "key = \"$escapedKey\""
             val req = requestBuilder("/api/collections/kv_store/records?page=1&perPage=1&filter=${enc(filter)}").get().build()
             val (code, body) = executeRaw(req)
             if (code in 200..299) {
@@ -455,7 +456,8 @@ class PocketBaseClient(context: Context) {
         onMessageEvent: (action: String, message: DrunMessage) -> Unit
     ): EventSource {
         val topic = if (channelIdFilter != null) {
-            "messages/*?options=${enc("{\"filter\":\"channelId = \\\"$channelIdFilter\\\"\"}")}"
+            val optionsJson = buildJsonObject { put("filter", "channelId = \"$channelIdFilter\"") }.toString()
+            "messages/*?options=${enc(optionsJson)}"
         } else {
             "messages/*"
         }
