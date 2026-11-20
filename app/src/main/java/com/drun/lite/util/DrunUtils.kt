@@ -42,7 +42,7 @@ object DrunUtils {
     fun dmKey(a: String, b: String): String = listOf(a, b).sorted().joinToString(":")
 
     private val emptyNameRegex = Regex(
-        "^(ID\s+[a-z0-9]{4,15}|Пользователь(\s+[a-z0-9]{4,15})?|Контакт(\s+[a-z0-9]{4,15})?|Собеседник)$",
+        """^(ID\s+[a-z0-9]{4,15}|Пользователь(\s+[a-z0-9]{4,15})?|Контакт(\s+[a-z0-9]{4,15})?|Собеседник)$""",
         RegexOption.IGNORE_CASE
     )
 

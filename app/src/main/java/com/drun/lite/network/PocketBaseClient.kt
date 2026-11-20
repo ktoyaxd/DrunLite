@@ -98,7 +98,7 @@ class PocketBaseClient(context: Context) {
 
     suspend fun login(rawLoginInput: String, password: String): Result<DrunUser> {
         val rawLogin = rawLoginInput.trim()
-        val isEmail = Regex("^\S+@\S+\.\S+$").matches(rawLogin)
+        val isEmail = Regex("""^\S+@\S+\.\S+$""").matches(rawLogin)
         val noAt = rawLogin.removePrefix("@")
         val candidates = linkedSetOf<String>().apply {
             add(rawLogin)
@@ -236,7 +236,7 @@ class PocketBaseClient(context: Context) {
 
         val missing = ids.filter { id -> out.none { it.id == id } }
         for (chunk in missing.chunked(4)) {
-            val filter = chunk.joinToString(" || ") { "id="$it"" }
+            val filter = chunk.joinToString(" || ") { "id=\"$it\"" }
             try {
                 val req = requestBuilder(
                     "/api/collections/users/records?page=1&perPage=${chunk.size}&skipTotal=true&filter=${enc(filter)}"
@@ -309,7 +309,7 @@ class PocketBaseClient(context: Context) {
 
     suspend fun getAcceptedFriendRequests(myId: String): List<FriendRequest> {
         return try {
-            val filter = "status = "accepted" && (from = "$myId" || to = "$myId")"
+            val filter = "status = \"accepted\" && (from = \"$myId\" || to = \"$myId\")"
             val req = requestBuilder("/api/collections/friendRequests/records?page=1&perPage=200&filter=${enc(filter)}").get().build()
             val (code, body) = executeRaw(req)
             if (code in 200..299) {
@@ -324,9 +324,9 @@ class PocketBaseClient(context: Context) {
     suspend fun getMessages(channelId: String, page: Int = 1, perPage: Int = 50, beforeDate: String? = null): List<DrunMessage> {
         return try {
             val filter = if (beforeDate != null) {
-                "channelId = "$channelId" && created < "$beforeDate""
+                "channelId = \"$channelId\" && created < \"$beforeDate\""
             } else {
-                "channelId = "$channelId""
+                "channelId = \"$channelId\""
             }
             val url = "/api/collections/messages/records?page=$page&perPage=$perPage&sort=${enc("-created")}&filter=${enc(filter)}"
             val req = requestBuilder(url).get().build()
@@ -455,7 +455,7 @@ class PocketBaseClient(context: Context) {
         onMessageEvent: (action: String, message: DrunMessage) -> Unit
     ): EventSource {
         val topic = if (channelIdFilter != null) {
-            "messages/*?options=${enc("{"filter":"channelId = \"$channelIdFilter\""}")}"
+            "messages/*?options=${enc("{\"filter\":\"channelId = \\\"$channelIdFilter\\\"\"}")}"
         } else {
             "messages/*"
         }
